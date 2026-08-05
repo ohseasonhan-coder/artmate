@@ -1,0 +1,148 @@
+import type { ArtistProfile, Inquiry, ScheduleItem } from "./types";
+
+// 모든 샘플 데이터에는 화면에서 "데모 데이터" 배지를 표시한다.
+export const DEMO_ARTISTS: ArtistProfile[] = [
+  {
+    slug: "crossover-ensemble",
+    artistName: "루미에르 크로스오버 앙상블",
+    profileType: "팀",
+    mainCategory: "크로스오버 앙상블",
+    subCategories: ["클래식", "팝페라", "기업행사"],
+    introShort: "클래식의 품격과 팝의 대중성을 잇는 4인 크로스오버 앙상블",
+    introLong:
+      "바이올린·첼로·피아노·보컬로 구성된 4인 앙상블입니다. 기업 창립기념 행사, 시상식, 지역축제 무대에서 대중적인 크로스오버 레퍼토리를 선보입니다. 행사 성격에 맞춘 선곡과 20~60분 유연한 구성이 강점입니다.",
+    strengths: ["기업행사 특화 선곡", "20~60분 유연한 구성", "전국 출장 가능"],
+    mainRegion: "서울",
+    availableRegions: ["수도권", "전국"],
+    teamSize: 4,
+    durationMin: 60,
+    coverImage: "indigo",
+    careers: [
+      { title: "삼성 계열사 창립기념식 축하공연", organization: "대기업 A", role: "메인 공연", activityDate: "2025-11", isFeatured: true },
+      { title: "성남시 가을문화축제 초청공연", organization: "성남문화재단", activityDate: "2025-10", isFeatured: true },
+      { title: "그랜드호텔 갈라디너 라이브", organization: "그랜드호텔", activityDate: "2025-09", isFeatured: true },
+      { title: "금융사 VIP 세미나 오프닝", organization: "증권사 B", activityDate: "2025-06" },
+      { title: "대학교 개교기념 음악회", organization: "C대학교", activityDate: "2025-05" },
+    ],
+    media: [
+      { type: "youtube", youtubeId: "dQw4w9WgXcQ", title: "기업행사 하이라이트" },
+      { type: "youtube", youtubeId: "9bZkp7q19f0", title: "축제 무대 실황" },
+    ],
+    isDemo: true,
+  },
+  {
+    slug: "jazz-trio",
+    artistName: "미드나잇 재즈 트리오",
+    profileType: "팀",
+    mainCategory: "재즈 밴드",
+    subCategories: ["재즈", "호텔 라운지", "기업행사"],
+    introShort: "호텔 라운지와 기업행사를 위한 세련된 3인 재즈 트리오",
+    introLong:
+      "피아노·베이스·드럼 3인 편성으로 호텔 라운지, 기업 리셉션, 연말 송년회에 어울리는 스탠다드 재즈와 보사노바를 연주합니다. 배경음악부터 메인 공연까지 20~60분 구성이 가능합니다.",
+    strengths: ["세련된 라운지 무드", "리셉션 배경음악 특화", "호텔·기업행사 경험 다수"],
+    mainRegion: "서울",
+    availableRegions: ["수도권"],
+    teamSize: 3,
+    durationMin: 60,
+    coverImage: "plum",
+    careers: [
+      { title: "호텔 연말 갈라 라이브", organization: "시티호텔", role: "라운지 세션", activityDate: "2025-12", isFeatured: true },
+      { title: "IT기업 송년회 공연", organization: "테크사 D", activityDate: "2025-12", isFeatured: true },
+      { title: "브랜드 론칭 리셉션", organization: "패션브랜드 E", activityDate: "2025-08" },
+    ],
+    media: [{ type: "youtube", youtubeId: "kXYiU_JCYtU", title: "라운지 세션 스케치" }],
+    isDemo: true,
+  },
+  {
+    slug: "magic-performance",
+    artistName: "원더 매직 퍼포먼스",
+    profileType: "팀",
+    mainCategory: "마술 퍼포먼스",
+    subCategories: ["마술", "가족행사", "공공기관"],
+    introShort: "어린이·가족행사에 활기를 더하는 1~2인 마술 퍼포먼스팀",
+    introLong:
+      "1~2인 구성으로 어린이날 행사, 가족 축제, 공공기관 시민행사에서 관객 참여형 마술과 코믹 퍼포먼스를 선보입니다. 무대·거리 공연 모두 가능하며 연령대별 구성이 강점입니다.",
+    strengths: ["관객 참여형 구성", "무대·거리공연 모두 가능", "공공기관 행사 경험"],
+    mainRegion: "인천",
+    availableRegions: ["수도권", "전국"],
+    teamSize: 2,
+    durationMin: 40,
+    coverImage: "amber",
+    careers: [
+      { title: "구청 어린이날 큰잔치", organization: "인천 F구청", role: "메인 퍼포먼스", activityDate: "2025-05", isFeatured: true },
+      { title: "복합쇼핑몰 가족페스티벌", organization: "쇼핑몰 G", activityDate: "2025-07", isFeatured: true },
+      { title: "도서관 여름방학 특별공연", organization: "H시립도서관", activityDate: "2025-08" },
+    ],
+    media: [{ type: "youtube", youtubeId: "L_jWHffIx5E", title: "가족행사 공연 영상" }],
+    isDemo: true,
+  },
+];
+
+export function getDemoArtist(slug: string): ArtistProfile | undefined {
+  return DEMO_ARTISTS.find((a) => a.slug === slug);
+}
+
+export const DEMO_INQUIRIES: Inquiry[] = [
+  {
+    id: "demo-1",
+    artistSlug: "crossover-ensemble",
+    companyName: "(주)한빛전자",
+    contactName: "김담당",
+    contactEmail: "event@hanbit.example.com",
+    contactPhone: "010-0000-0000",
+    eventName: "창립 20주년 기념식",
+    eventDate: "2026-09-18",
+    location: "서울 코엑스 오디토리움",
+    audienceSize: "300명",
+    performanceDuration: "40분",
+    estimatedBudget: "협의",
+    requestDetails: "식전 공연 및 축하 무대. 밝고 격조 있는 분위기 희망합니다.",
+    status: "신규 문의",
+    createdAt: "2026-08-01",
+    isDemo: true,
+  },
+  {
+    id: "demo-2",
+    artistSlug: "crossover-ensemble",
+    companyName: "성남문화재단",
+    contactName: "이주무관",
+    contactEmail: "festival@snculture.example.com",
+    contactPhone: "010-0000-0000",
+    eventName: "가을 시민문화축제",
+    eventDate: "2026-10-11",
+    location: "성남시청 야외광장",
+    audienceSize: "1000명 이상",
+    performanceDuration: "60분",
+    estimatedBudget: "예산 확정",
+    requestDetails: "야외 무대, 대중적인 선곡 위주로 요청드립니다.",
+    status: "협의 중",
+    createdAt: "2026-07-28",
+    isDemo: true,
+  },
+  {
+    id: "demo-3",
+    artistSlug: "crossover-ensemble",
+    companyName: "그랜드호텔",
+    contactName: "박매니저",
+    contactEmail: "banquet@grandhotel.example.com",
+    contactPhone: "010-0000-0000",
+    eventName: "연말 갈라디너",
+    eventDate: "2026-12-20",
+    location: "그랜드호텔 그랜드볼룸",
+    audienceSize: "200명",
+    performanceDuration: "30분",
+    estimatedBudget: "협의",
+    requestDetails: "디너 중 라이브 공연. 우아한 분위기 희망.",
+    status: "확정",
+    createdAt: "2026-07-20",
+    isDemo: true,
+  },
+];
+
+export const DEMO_SCHEDULES: ScheduleItem[] = [
+  { id: "s1", title: "그랜드호텔 갈라디너 공연", type: "공연", date: "2026-08-08", location: "그랜드호텔 그랜드볼룸", status: "확정" },
+  { id: "s2", title: "성남축제 리허설", type: "리허설", date: "2026-08-10", location: "성남시청 야외광장", status: "확정" },
+  { id: "s3", title: "한빛전자 담당자 미팅", type: "기업 미팅", date: "2026-08-12", location: "온라인", status: "임시" },
+  { id: "s4", title: "송년회 섭외 문의(협의)", type: "임시 섭외", date: "2026-08-15", status: "임시" },
+  { id: "s5", title: "지원사업 신청 마감", type: "제출 마감", date: "2026-08-20", status: "임시" },
+];

@@ -1,69 +1,121 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Sparkles, CalendarCheck, Trophy, Bot, ArrowRight } from "lucide-react";
+import StatusBadge from "@/components/StatusBadge";
+
+const FLOW = [
+  "자료 등록",
+  "AI 프로필 생성",
+  "공개 링크 공유",
+  "기업 문의",
+  "일정·활동 프로젝트",
+  "활동 완료",
+  "경력 업데이트",
+];
+
+const CORE_CARDS = [
+  { icon: Sparkles, title: "AI 프로필 제작", desc: "기존 자료를 바탕으로 간결하고 전문적인 프로필을 만듭니다.", status: "demo" as const },
+  { icon: CalendarCheck, title: "섭외 및 일정관리", desc: "기업 문의부터 공연 일정과 준비사항까지 관리합니다.", status: "live" as const },
+  { icon: Trophy, title: "활동 경력 자동관리", desc: "완료된 활동을 경력과 포트폴리오에 연결합니다.", status: "live" as const },
+  { icon: Bot, title: "AI 개인비서", desc: "문의·일정·준비사항과 경력 업데이트를 안내합니다.", status: "demo" as const },
+];
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div>
+      {/* 히어로 */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-[var(--accent-soft)] to-transparent" />
+        <div className="mx-auto max-w-6xl px-4 py-16 md:py-24">
+          <div className="mx-auto max-w-3xl text-center">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--accent)]/20 bg-[var(--surface)] px-3 py-1 text-xs font-medium text-[var(--accent)]">
+              <Sparkles size={13} /> 문화예술인 전용 AI 개인 매니저
+            </span>
+            <h1 className="mt-5 text-3xl font-bold leading-tight tracking-tight md:text-5xl">
+              프로필을 만들고, 섭외를 받고,
+              <br />
+              일정을 관리하세요.
+              <br />
+              <span className="text-[var(--accent)]">나머지는 AI 매니저가 챙겨드립니다.</span>
+            </h1>
+            <p className="mx-auto mt-5 max-w-2xl text-base text-[var(--muted)] md:text-lg">
+              사진, 영상, 기존 이력서를 한 번만 등록하면 전문 프로필을 만들고
+              기업의 섭외 문의부터 일정과 경력까지 한곳에서 관리할 수 있습니다.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <Link href="/signup" className="btn-primary inline-flex items-center gap-1.5 rounded-xl px-5 py-3 text-sm font-semibold">
+                무료 프로필 만들기 <ArrowRight size={16} />
+              </Link>
+              <Link href="/a/crossover-ensemble" className="inline-flex items-center gap-1.5 rounded-xl border bg-[var(--surface)] px-5 py-3 text-sm font-semibold transition hover:bg-[var(--surface-2)]">
+                샘플 프로필 보기
+              </Link>
+              <Link href="/browse" className="inline-flex items-center gap-1.5 rounded-xl border bg-[var(--surface)] px-5 py-3 text-sm font-semibold transition hover:bg-[var(--surface-2)]">
+                기업으로 둘러보기
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 핵심 기능 카드 */}
+      <section className="mx-auto max-w-6xl px-4 py-12">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {CORE_CARDS.map((c) => {
+            const Icon = c.icon;
+            return (
+              <div key={c.title} className="card p-5">
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-[var(--accent-soft)] text-[var(--accent)]">
+                    <Icon size={20} />
+                  </span>
+                  <StatusBadge status={c.status} />
+                </div>
+                <h3 className="font-semibold">{c.title}</h3>
+                <p className="mt-1 text-sm text-[var(--muted)]">{c.desc}</p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* 핵심 서비스 흐름 */}
+      <section className="mx-auto max-w-6xl px-4 py-12">
+        <div className="card overflow-hidden p-6 md:p-8">
+          <h2 className="text-xl font-bold">핵심 서비스 흐름</h2>
+          <p className="mt-1 text-sm text-[var(--muted)]">
+            자료를 한 번 등록하면 섭외와 일정, 경력까지 자연스럽게 이어집니다.
           </p>
+          <div className="mt-6 flex flex-wrap items-center gap-2">
+            {FLOW.map((step, i) => (
+              <div key={step} className="flex items-center gap-2">
+                <span className="rounded-lg bg-[var(--surface-2)] px-3 py-2 text-sm font-medium">
+                  {step}
+                </span>
+                {i < FLOW.length - 1 && <ArrowRight size={14} className="text-[var(--muted)]" />}
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      {/* CTA */}
+      <section className="mx-auto max-w-6xl px-4 pb-20 pt-4">
+        <div className="card flex flex-col items-center gap-4 bg-gradient-to-br from-[var(--accent-soft)] to-[var(--surface)] p-8 text-center md:flex-row md:justify-between md:text-left">
+          <div>
+            <h2 className="text-xl font-bold">전체 기능을 먼저 둘러보세요</h2>
+            <p className="mt-1 text-sm text-[var(--muted)]">
+              사용 가능·데모·구현 중 기능을 상태별로 확인하고, 필요한 기능에 관심을 남길 수 있습니다.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Link href="/features" className="btn-primary rounded-xl px-5 py-3 text-sm font-semibold">
+              기능 전체보기
+            </Link>
+            <Link href="/roadmap" className="rounded-xl border bg-[var(--surface)] px-5 py-3 text-sm font-semibold transition hover:bg-[var(--surface-2)]">
+              구현 로드맵
+            </Link>
+          </div>
         </div>
-      </main>
+      </section>
     </div>
   );
 }

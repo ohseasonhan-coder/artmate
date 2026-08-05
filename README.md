@@ -1,36 +1,140 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 아트메이트 AI (ArtMate AI)
 
-## Getting Started
+문화예술인을 위한 **AI 프로필 · 섭외 · 일정관리** 웹서비스 프로토타입형 MVP.
 
-First, run the development server:
+> 프로필을 만들고, 섭외를 받고, 일정을 관리하세요. 나머지는 AI 매니저가 챙겨드립니다.
+
+문화예술인이 자료를 한 번 등록하면 전문 공개 프로필을 만들고, 기업의 섭외 문의부터
+일정·활동 프로젝트·경력 업데이트까지 한곳에서 관리합니다. 장기적으로는 캘린더·이메일 연동,
+제작 스튜디오, 지원사업 추천, 계약·정산, 기업 AI 매칭까지 확장합니다.
+
+이 프로젝트는 **완성형 상용 서비스가 아니라 프로토타입형 MVP**입니다.
+핵심 기능은 실제로 사용할 수 있고, 미래 기능은 화면과 흐름을 미리 체험할 수 있으며,
+아직 구현되지 않은 기능은 `구현 중`으로 명확히 표시합니다.
+
+---
+
+## 기술 구성
+
+- **Next.js 16** (App Router) · **React 19** · **TypeScript**
+- **Tailwind CSS v4** (CSS 기반 테마)
+- **lucide-react** 아이콘
+- **Supabase** (인증 · PostgreSQL · Storage) — *미연결 시 자동 데모 모드*
+- 배포: **Vercel**
+
+---
+
+## 기능 상태 표기
+
+| 배지 | 의미 |
+|------|------|
+| `● 사용 가능` | 실제 데이터 저장·수정이 가능한 기능 |
+| `● 데모` | 샘플 데이터/임시 로직으로 체험 가능, 외부 서비스 미연결 |
+| `● 구현 중` | 화면·예상 동작만 확인 가능, 관심 등록 가능 |
+
+### 현재 사용 가능 (live)
+- 문화예술인 회원가입 / 로그인 (Supabase 연결 시 실제 인증)
+- 프로필 편집 · 공개 프로필 · 공유 링크
+- 예술인 둘러보기 · 카테고리 검색
+- **기업 섭외 문의** (무가입) → **문의 관리** (상태 전환)
+- 일정관리 · 활동 프로젝트 · 준비 체크리스트 · 공연 후 경력 추가
+
+### 데모 (demo)
+- AI 프로필 자동 생성 (샘플 결과)
+- AI 개인비서 (정해진 예시 질문 응답)
+- 자연어 AI 검색·매칭 (데모 추천 결과)
+- 관리자 콘솔 (기능 관심도 집계)
+
+### 구현 중 (soon)
+- 제작 스튜디오(PPT·포스터·카드뉴스·영문 프로필) · SNS 홍보
+- 예술활동 패스포트 · 지원사업 AI 비서 · 계약·권리·정산
+- Google Calendar / Gmail / Google Drive 연동
+- 후보 비교·인재풀 · 팀 일정·역할 관리
+
+전체 목록은 앱의 **`/features`(기능 전체보기)**, **`/roadmap`(구현 로드맵)** 에서 상태별로 확인할 수 있습니다.
+
+---
+
+## 설치 및 실행
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev      # http://localhost:3000
+npm run build    # 프로덕션 빌드 (타입 검사 포함)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 환경변수
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+`.env.example` 을 복사해 `.env.local` 을 만들고 값을 채웁니다.
+**값이 없어도 앱은 데모 모드로 정상 실행됩니다.** (실제 값은 커밋 금지)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+AI_API_KEY=            # 서버 측 전용 (NEXT_PUBLIC_ 접두사 금지)
+ADMIN_EMAIL=
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Supabase 설정
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. supabase.com 에서 무료 프로젝트 생성
+2. **SQL Editor** 에 [`supabase.sql`](./supabase.sql) 전체를 붙여넣어 실행
+   - 테이블 11종 + Row Level Security 정책 포함
+   - 공개 프로필은 누구나 읽기, 소유자만 수정
+   - 기업 문의·기능 관심도는 **익명 INSERT 허용**, 조회는 소유자/본인 한정
+3. **Project Settings > API** 의 URL / anon key 를 환경변수에 입력
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Vercel 배포
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. 기존 Vercel 프로젝트에 이 저장소를 연결 (Framework: **Next.js** 자동 인식)
+2. **Settings > Environment Variables** 에 위 환경변수 등록 (없으면 데모 모드로 배포됨)
+3. GitHub push → Vercel **Preview Deployment** 에서 확인 후 운영 반영
+4. 모바일/PC 화면과 `사용 가능`/`구현 중` 표기를 점검 후 Production 반영
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+> 환경변수가 없어도 빌드/배포가 성공하며 화면이 열립니다. (데모 모드)
+
+---
+
+## 데모 계정 · 샘플 데이터
+
+- **데모 모드**에서는 로그인/회원가입 시 아무 값이나 입력하면 대시보드를 체험할 수 있습니다.
+- 샘플 예술인 프로필 3종:
+  - `/a/crossover-ensemble` — 루미에르 크로스오버 앙상블 (4인)
+  - `/a/jazz-trio` — 미드나잇 재즈 트리오 (3인)
+  - `/a/magic-performance` — 원더 매직 퍼포먼스 (1~2인)
+- 샘플 기업 문의·일정은 문의 관리/일정/대시보드 화면에 표시됩니다. (모두 "데모 데이터" 표기)
+
+---
+
+## 테스트 체크리스트
+
+- [ ] 랜딩 → 샘플 프로필 → 섭외 문의 제출까지 흐름 이동
+- [ ] 문의 관리에서 상태 전환(신규→확정) 동작
+- [ ] 활동 프로젝트 체크리스트 체크 → 완료 → 경력 추가
+- [ ] 구현 중 버튼 클릭 시 안내 모달 + 관심 등록 동작
+- [ ] 데모 모드(환경변수 없음)에서 오류 없이 전체 화면 열림
+- [ ] 모바일 하단 내비게이션 동작
+
+---
+
+## 알려진 제한사항
+
+- 대표 이미지는 프로토타입에서 그라디언트 자리표시자로 대체 (실제 서비스는 업로드 사진)
+- Supabase 미연결 시 저장 기능은 데모(비저장)로 동작
+- `구현 중` 기능은 실제 외부 서비스 권한을 요구하지 않음
+- 유료결제·전자계약·실시간 채팅·대용량 영상 저장 등은 초기 범위에서 제외
+
+## 무료 한도 관련
+
+- Supabase Free / Vercel Hobby / (선택)AI API 무료 한도 내 운영 전제
+- 영상은 파일 저장 대신 **YouTube 링크** 등록으로 저장 용량 절약
+- 대용량 영상·계약서·주민등록·계좌정보는 저장하지 않음
+
+## 향후 개발 우선순위
+
+사용자의 **기능 관심도(`/admin`)** 집계를 바탕으로 우선순위를 결정합니다.
+초기 후보: Google Calendar 연동 → 제작 스튜디오 → 지원사업 비서 → 계약·정산.
