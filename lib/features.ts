@@ -40,7 +40,7 @@ export const FEATURES: FeatureDef[] = [
   // 기업
   { key: "browse", title: "예술인 둘러보기 & 카테고리 검색", desc: "기업이 카테고리로 공연팀 탐색", status: "live", href: "/browse", group: "기업" },
   { key: "ai-search", title: "자연어 AI 검색·매칭", desc: "\"12월 송년회 3~5인 밝은 공연팀\" 같은 자연어 검색", status: "demo", href: "/company/search", group: "기업" },
-  { key: "compare", title: "후보 비교·인재풀", desc: "여러 후보를 나란히 비교, 사내 검토보고서", status: "soon", href: "/company/search", group: "기업" },
+  { key: "compare", title: "후보 비교·인재풀", desc: "여러 후보를 나란히 비교, 사내 검토보고서", status: "soon", href: "/company/compare", group: "기업" },
   { key: "team", title: "팀 일정·역할 관리", desc: "팀원 일정·참여여부·리허설 투표·정산", status: "soon", href: "/dashboard/team", group: "일정·활동" },
 
   // 관리

@@ -25,10 +25,18 @@ export default function BrowsePage() {
           </div>
           <p className="mt-1 text-[var(--muted)]">가입 없이 예술인을 탐색하고 섭외 문의를 보낼 수 있습니다.</p>
         </div>
-        <Link href="/company/search" className="inline-flex items-center gap-1.5 rounded-lg border bg-[var(--surface)] px-4 py-2 text-sm font-medium transition hover:bg-[var(--surface-2)]">
-          <Sparkles size={15} className="text-[var(--accent)]" /> 자연어 AI 검색
-          <StatusBadge status="demo" className="ml-1" />
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/company/search" className="inline-flex items-center gap-1.5 rounded-lg border bg-[var(--surface)] px-4 py-2 text-sm font-medium transition hover:bg-[var(--surface-2)]">
+            <Sparkles size={15} className="text-[var(--accent)]" /> 자연어 AI 검색
+            <StatusBadge status="demo" className="ml-1" />
+          </Link>
+          <Link href="/company/pool" className="inline-flex items-center rounded-lg border bg-[var(--surface)] px-4 py-2 text-sm font-medium transition hover:bg-[var(--surface-2)]">
+            인재풀
+          </Link>
+          <Link href="/company/compare" className="inline-flex items-center rounded-lg border bg-[var(--surface)] px-4 py-2 text-sm font-medium transition hover:bg-[var(--surface-2)]">
+            후보 비교
+          </Link>
+        </div>
       </div>
 
       {/* 카테고리 필터 */}

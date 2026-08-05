@@ -9,6 +9,7 @@ const TABS = [
   { href: "/dashboard/schedule", label: "일정" },
   { href: "/dashboard/projects", label: "활동 프로젝트" },
   { href: "/dashboard/profile", label: "프로필 편집" },
+  { href: "/dashboard/media", label: "사진·영상" },
   { href: "/dashboard/assistant", label: "AI 비서" },
   { href: "/dashboard/studio", label: "제작 스튜디오" },
   { href: "/dashboard/passport", label: "패스포트" },

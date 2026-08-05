@@ -35,7 +35,7 @@ export default function SignupPage() {
       });
       setLoading(false);
       if (error) return setMsg("가입 처리 중 오류: " + error.message);
-      router.push("/dashboard");
+      router.push("/onboarding");
       return;
     }
     // 데모 모드: 실제 계정 생성 없이 대시보드로 이동

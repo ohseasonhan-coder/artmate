@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import "./globals.css";
 import Nav from "@/components/Nav";
 import DemoBanner from "@/components/DemoBanner";
+import Footer from "@/components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <DemoBanner />
         <Nav />
         <main className="flex-1">{children}</main>
+        <Footer />
         <div className="h-16 md:hidden" />
       </body>
     </html>
