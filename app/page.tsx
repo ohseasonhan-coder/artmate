@@ -1,16 +1,13 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Sparkles, CalendarCheck, Trophy, Bot, ArrowRight } from "lucide-react";
 import StatusBadge from "@/components/StatusBadge";
+import AdSlot from "@/components/AdSlot";
+import { DEFAULT_CONFIG, loadConfig, type SiteConfig, type SectionId, type AdPlacement } from "@/lib/site-config";
 
-const FLOW = [
-  "자료 등록",
-  "AI 프로필 생성",
-  "공개 링크 공유",
-  "기업 문의",
-  "일정·활동 프로젝트",
-  "활동 완료",
-  "경력 업데이트",
-];
+const FLOW = ["자료 등록", "AI 프로필 생성", "공개 링크 공유", "기업 문의", "일정·활동 프로젝트", "활동 완료", "경력 업데이트"];
 
 const CORE_CARDS = [
   { icon: Sparkles, title: "AI 프로필 제작", desc: "기존 자료를 바탕으로 간결하고 전문적인 프로필을 만듭니다.", status: "demo" as const },
@@ -20,102 +17,115 @@ const CORE_CARDS = [
 ];
 
 export default function Home() {
+  const [config, setConfig] = useState<SiteConfig>(DEFAULT_CONFIG);
+  useEffect(() => setConfig(loadConfig()), []);
+
+  const adsAt = (p: AdPlacement) => config.ads.filter((a) => a.enabled && a.placement === p);
+  const SECTIONS: Record<SectionId, React.ReactNode> = { hero: <Hero />, features: <Features />, flow: <Flow />, cta: <Cta /> };
+  const placementForSection: Partial<Record<SectionId, AdPlacement>> = { hero: "after-hero", features: "after-features" };
+
   return (
     <div>
-      {/* 히어로 */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-[var(--accent-soft)] to-transparent" />
-        <div className="mx-auto max-w-6xl px-4 py-16 md:py-24">
-          <div className="mx-auto max-w-3xl text-center">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--accent)]/20 bg-[var(--surface)] px-3 py-1 text-xs font-medium text-[var(--accent)]">
-              <Sparkles size={13} /> 문화예술인 전용 AI 개인 매니저
-            </span>
-            <h1 className="mt-5 text-3xl font-bold leading-tight tracking-tight md:text-5xl">
-              프로필을 만들고, 섭외를 받고,
-              <br />
-              일정을 관리하세요.
-              <br />
-              <span className="text-[var(--accent)]">나머지는 AI 매니저가 챙겨드립니다.</span>
-            </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-base text-[var(--muted)] md:text-lg">
-              사진, 영상, 기존 이력서를 한 번만 등록하면 전문 프로필을 만들고
-              기업의 섭외 문의부터 일정과 경력까지 한곳에서 관리할 수 있습니다.
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <Link href="/signup" className="btn-primary inline-flex items-center gap-1.5 rounded-xl px-5 py-3 text-sm font-semibold">
-                무료 프로필 만들기 <ArrowRight size={16} />
-              </Link>
-              <Link href="/a/crossover-ensemble" className="inline-flex items-center gap-1.5 rounded-xl border bg-[var(--surface)] px-5 py-3 text-sm font-semibold transition hover:bg-[var(--surface-2)]">
-                샘플 프로필 보기
-              </Link>
-              <Link href="/browse" className="inline-flex items-center gap-1.5 rounded-xl border bg-[var(--surface)] px-5 py-3 text-sm font-semibold transition hover:bg-[var(--surface-2)]">
-                기업으로 둘러보기
-              </Link>
-            </div>
-          </div>
+      {adsAt("top").map((ad) => <AdSlot key={ad.id} ad={ad} />)}
+      {config.sections.filter((s) => s.enabled).map((s) => (
+        <div key={s.id}>
+          {SECTIONS[s.id]}
+          {placementForSection[s.id] && adsAt(placementForSection[s.id]!).map((ad) => <AdSlot key={ad.id} ad={ad} />)}
         </div>
-      </section>
-
-      {/* 핵심 기능 카드 */}
-      <section className="mx-auto max-w-6xl px-4 py-12">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {CORE_CARDS.map((c) => {
-            const Icon = c.icon;
-            return (
-              <div key={c.title} className="card p-5">
-                <div className="mb-3 flex items-center justify-between">
-                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-[var(--accent-soft)] text-[var(--accent)]">
-                    <Icon size={20} />
-                  </span>
-                  <StatusBadge status={c.status} />
-                </div>
-                <h3 className="font-semibold">{c.title}</h3>
-                <p className="mt-1 text-sm text-[var(--muted)]">{c.desc}</p>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* 핵심 서비스 흐름 */}
-      <section className="mx-auto max-w-6xl px-4 py-12">
-        <div className="card overflow-hidden p-6 md:p-8">
-          <h2 className="text-xl font-bold">핵심 서비스 흐름</h2>
-          <p className="mt-1 text-sm text-[var(--muted)]">
-            자료를 한 번 등록하면 섭외와 일정, 경력까지 자연스럽게 이어집니다.
-          </p>
-          <div className="mt-6 flex flex-wrap items-center gap-2">
-            {FLOW.map((step, i) => (
-              <div key={step} className="flex items-center gap-2">
-                <span className="rounded-lg bg-[var(--surface-2)] px-3 py-2 text-sm font-medium">
-                  {step}
-                </span>
-                {i < FLOW.length - 1 && <ArrowRight size={14} className="text-[var(--muted)]" />}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="mx-auto max-w-6xl px-4 pb-20 pt-4">
-        <div className="card flex flex-col items-center gap-4 bg-gradient-to-br from-[var(--accent-soft)] to-[var(--surface)] p-8 text-center md:flex-row md:justify-between md:text-left">
-          <div>
-            <h2 className="text-xl font-bold">전체 기능을 먼저 둘러보세요</h2>
-            <p className="mt-1 text-sm text-[var(--muted)]">
-              사용 가능·데모·구현 중 기능을 상태별로 확인하고, 필요한 기능에 관심을 남길 수 있습니다.
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Link href="/features" className="btn-primary rounded-xl px-5 py-3 text-sm font-semibold">
-              기능 전체보기
-            </Link>
-            <Link href="/roadmap" className="rounded-xl border bg-[var(--surface)] px-5 py-3 text-sm font-semibold transition hover:bg-[var(--surface-2)]">
-              구현 로드맵
-            </Link>
-          </div>
-        </div>
-      </section>
+      ))}
+      {adsAt("bottom").map((ad) => <AdSlot key={ad.id} ad={ad} />)}
     </div>
+  );
+}
+
+function Hero() {
+  return (
+    <section className="relative overflow-hidden">
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-[var(--accent-soft)] to-transparent" />
+      <div className="mx-auto max-w-6xl px-4 py-16 md:py-24">
+        <div className="mx-auto max-w-3xl text-center">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--accent)]/20 bg-[var(--surface)] px-3 py-1 text-xs font-medium text-[var(--accent)]">
+            <Sparkles size={13} /> 문화예술인 전용 AI 개인 매니저
+          </span>
+          <h1 className="mt-5 text-3xl font-bold leading-tight tracking-tight md:text-5xl">
+            프로필을 만들고, 섭외를 받고,<br />일정을 관리하세요.<br />
+            <span className="text-[var(--accent)]">나머지는 AI 매니저가 챙겨드립니다.</span>
+          </h1>
+          <p className="mx-auto mt-5 max-w-2xl text-base text-[var(--muted)] md:text-lg">
+            사진, 영상, 기존 이력서를 한 번만 등록하면 전문 프로필을 만들고
+            기업의 섭외 문의부터 일정과 경력까지 한곳에서 관리할 수 있습니다.
+          </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Link href="/onboarding" className="btn-primary inline-flex items-center gap-1.5 rounded-xl px-5 py-3 text-sm font-semibold">
+              무료 프로필 만들기 <ArrowRight size={16} />
+            </Link>
+            <Link href="/a/crossover-ensemble" className="inline-flex items-center gap-1.5 rounded-xl border bg-[var(--surface)] px-5 py-3 text-sm font-semibold transition hover:bg-[var(--surface-2)]">
+              샘플 프로필 보기
+            </Link>
+            <Link href="/browse" className="inline-flex items-center gap-1.5 rounded-xl border bg-[var(--surface)] px-5 py-3 text-sm font-semibold transition hover:bg-[var(--surface-2)]">
+              기업으로 둘러보기
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Features() {
+  return (
+    <section className="mx-auto max-w-6xl px-4 py-12">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {CORE_CARDS.map((c) => {
+          const Icon = c.icon;
+          return (
+            <div key={c.title} className="card p-5">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="grid h-10 w-10 place-items-center rounded-xl bg-[var(--accent-soft)] text-[var(--accent)]"><Icon size={20} /></span>
+                <StatusBadge status={c.status} />
+              </div>
+              <h3 className="font-semibold">{c.title}</h3>
+              <p className="mt-1 text-sm text-[var(--muted)]">{c.desc}</p>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function Flow() {
+  return (
+    <section className="mx-auto max-w-6xl px-4 py-12">
+      <div className="card overflow-hidden p-6 md:p-8">
+        <h2 className="text-xl font-bold">핵심 서비스 흐름</h2>
+        <p className="mt-1 text-sm text-[var(--muted)]">자료를 한 번 등록하면 섭외와 일정, 경력까지 자연스럽게 이어집니다.</p>
+        <div className="mt-6 flex flex-wrap items-center gap-2">
+          {FLOW.map((step, i) => (
+            <div key={step} className="flex items-center gap-2">
+              <span className="rounded-lg bg-[var(--surface-2)] px-3 py-2 text-sm font-medium">{step}</span>
+              {i < FLOW.length - 1 && <ArrowRight size={14} className="text-[var(--muted)]" />}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Cta() {
+  return (
+    <section className="mx-auto max-w-6xl px-4 pb-20 pt-4">
+      <div className="card flex flex-col items-center gap-4 bg-gradient-to-br from-[var(--accent-soft)] to-[var(--surface)] p-8 text-center md:flex-row md:justify-between md:text-left">
+        <div>
+          <h2 className="text-xl font-bold">전체 기능을 먼저 둘러보세요</h2>
+          <p className="mt-1 text-sm text-[var(--muted)]">사용 가능·데모·구현 중 기능을 상태별로 확인하고, 필요한 기능에 관심을 남길 수 있습니다.</p>
+        </div>
+        <div className="flex gap-2">
+          <Link href="/features" className="btn-primary rounded-xl px-5 py-3 text-sm font-semibold">기능 전체보기</Link>
+          <Link href="/roadmap" className="rounded-xl border bg-[var(--surface)] px-5 py-3 text-sm font-semibold transition hover:bg-[var(--surface-2)]">구현 로드맵</Link>
+        </div>
+      </div>
+    </section>
   );
 }
