@@ -3,6 +3,15 @@
 import { useState } from "react";
 import { Send, Sparkles } from "lucide-react";
 import StatusBadge from "@/components/StatusBadge";
+import { DEMO_SCHEDULES, DEMO_INQUIRIES } from "@/lib/demo-data";
+
+// AI에 전달할 참고 데이터(현재는 데모 데이터; 로그인 연동 후 사용자 실데이터로 대체)
+const CONTEXT = [
+  "[일정]",
+  ...DEMO_SCHEDULES.map((s) => `- ${s.date} ${s.title} (${s.type}, ${s.status})`),
+  "[문의]",
+  ...DEMO_INQUIRIES.map((i) => `- ${i.companyName} / ${i.eventName} / ${i.eventDate} / 상태:${i.status}`),
+].join("\n");
 
 const SUGGESTIONS = [
   "다음 주 일정을 정리해줘.",
@@ -30,12 +39,30 @@ export default function AssistantPage() {
     { role: "ai", text: "안녕하세요! AI 개인비서입니다. 일정·문의·준비사항·경력을 도와드릴게요. 아래 예시를 눌러보세요." },
   ]);
   const [input, setInput] = useState("");
+  const [busy, setBusy] = useState(false);
 
-  function ask(q: string) {
-    const reply = DEMO_REPLIES[q] ??
-      "데모 모드에서는 정해진 예시 질문에만 답변합니다. 실제 서비스에서는 일정·문의·경력 데이터를 바탕으로 자유롭게 대화할 수 있습니다.";
-    setMsgs((m) => [...m, { role: "user", text: q }, { role: "ai", text: reply }]);
+  function demoReply(q: string): string {
+    return DEMO_REPLIES[q] ??
+      "데모 모드에서는 정해진 예시 질문에만 답변합니다. GEMINI_API_KEY를 설정하면 일정·문의 데이터를 바탕으로 자유롭게 대화할 수 있습니다.";
+  }
+
+  async function ask(q: string) {
+    setMsgs((m) => [...m, { role: "user", text: q }]);
     setInput("");
+    setBusy(true);
+    try {
+      const res = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ task: "assistant", input: { question: q, context: CONTEXT } }),
+      });
+      const json = await res.json();
+      const text = json.configured && json.text ? json.text : demoReply(q);
+      setMsgs((m) => [...m, { role: "ai", text }]);
+    } catch {
+      setMsgs((m) => [...m, { role: "ai", text: demoReply(q) }]);
+    }
+    setBusy(false);
   }
 
   return (
@@ -45,7 +72,7 @@ export default function AssistantPage() {
         <StatusBadge status="demo" />
       </div>
       <p className="mt-2 rounded-lg bg-[var(--demo-soft)] p-3 text-sm text-[var(--demo)]">
-        실제 AI 대화 연결은 구현 중입니다. 현재는 정해진 예시 질문에 데모 응답을 제공합니다.
+        GEMINI_API_KEY 설정 시 일정·문의 데이터를 바탕으로 실제 대화합니다. 미설정 시 예시 질문에 데모 응답을 제공합니다.
       </p>
 
       <div className="mt-5 card flex h-[60vh] flex-col">
@@ -69,10 +96,10 @@ export default function AssistantPage() {
               </button>
             ))}
           </div>
-          <form onSubmit={(e) => { e.preventDefault(); if (input.trim()) ask(input.trim()); }} className="flex gap-2">
-            <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="무엇이든 물어보세요…"
-              className="flex-1 rounded-lg border bg-[var(--surface)] px-3 py-2 text-sm outline-none focus:border-[var(--accent)]" />
-            <button className="btn-primary grid place-items-center rounded-lg px-3"><Send size={16} /></button>
+          <form onSubmit={(e) => { e.preventDefault(); if (input.trim() && !busy) ask(input.trim()); }} className="flex gap-2">
+            <input value={input} onChange={(e) => setInput(e.target.value)} placeholder={busy ? "답변 생성 중…" : "무엇이든 물어보세요…"} disabled={busy}
+              className="flex-1 rounded-lg border bg-[var(--surface)] px-3 py-2 text-sm outline-none focus:border-[var(--accent)] disabled:opacity-60" />
+            <button disabled={busy} className="btn-primary grid place-items-center rounded-lg px-3 disabled:opacity-60"><Send size={16} /></button>
           </form>
         </div>
       </div>

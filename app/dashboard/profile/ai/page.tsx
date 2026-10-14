@@ -8,8 +8,15 @@ import StatusBadge from "@/components/StatusBadge";
 
 const base = getDemoArtist("crossover-ensemble")!;
 
+interface ProfileResult {
+  introShort: string;
+  strengths: string[];
+  careerSummary: string;
+  featured: string[];
+}
+
 // 실제 AI 미연결 시 보여줄 샘플 결과
-const SAMPLE = {
+const SAMPLE: ProfileResult = {
   introShort: base.introShort,
   strengths: base.strengths,
   careerSummary:
@@ -19,10 +26,43 @@ const SAMPLE = {
 
 export default function AiProfilePage() {
   const [phase, setPhase] = useState<"idle" | "loading" | "result">("idle");
+  const [result, setResult] = useState<ProfileResult>(SAMPLE);
+  const [live, setLive] = useState(false); // 실제 AI 결과 여부
+  const [err, setErr] = useState<string | null>(null);
 
-  function run() {
+  async function run() {
     setPhase("loading");
-    setTimeout(() => setPhase("result"), 1400);
+    setErr(null);
+    try {
+      const res = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          task: "profile",
+          input: {
+            artistName: base.artistName,
+            mainCategory: base.mainCategory,
+            profileType: base.profileType,
+            teamSize: base.teamSize,
+            region: base.mainRegion,
+            careers: base.careers.map((c) => `${c.title} (${c.organization}, ${c.activityDate})`),
+          },
+        }),
+      });
+      const json = await res.json();
+      if (json.configured && json.data) {
+        setResult({ ...SAMPLE, ...json.data });
+        setLive(true);
+      } else {
+        if (json.error) setErr(json.error);
+        setResult(SAMPLE);
+        setLive(false);
+      }
+    } catch {
+      setResult(SAMPLE);
+      setLive(false);
+    }
+    setPhase("result");
   }
 
   return (
@@ -32,18 +72,24 @@ export default function AiProfilePage() {
       </Link>
       <div className="flex items-center gap-2">
         <h1 className="text-2xl font-bold">AI 프로필 자동 생성</h1>
-        <StatusBadge status="demo" />
+        <StatusBadge status={live ? "live" : "demo"} />
       </div>
-      <p className="mt-2 rounded-lg bg-[var(--demo-soft)] p-3 text-sm text-[var(--demo)]">
-        현재 AI 자동 분석 기능은 구현 중입니다. 테스트 기간에는 관리자 검토 또는 데모 결과가 제공됩니다.
-      </p>
+      {live ? (
+        <p className="mt-2 rounded-lg bg-[var(--live-soft)] p-3 text-sm text-[var(--live)]">
+          Gemini AI가 실제로 생성한 결과입니다. 내용을 검토·수정한 뒤 프로필에 반영하세요.
+        </p>
+      ) : (
+        <p className="mt-2 rounded-lg bg-[var(--demo-soft)] p-3 text-sm text-[var(--demo)]">
+          {err ? `AI 호출 오류로 데모 결과를 표시합니다: ${err}` : "AI 키 미설정 시 데모 결과가 제공됩니다. GEMINI_API_KEY 설정 시 실제 생성됩니다."}
+        </p>
+      )}
 
       {phase === "idle" && (
         <div className="mt-6 card p-6 text-center">
           <Sparkles size={36} className="mx-auto text-[var(--accent)]" />
           <p className="mt-3 font-medium">기존 자료를 분석해 프로필 초안을 생성합니다</p>
           <p className="mt-1 text-sm text-[var(--muted)]">한 문장 소개 · 핵심 강점 · 경력 요약 · 대표 경력 추천</p>
-          <button onClick={run} className="btn-primary mt-4 rounded-lg px-5 py-2.5 text-sm font-semibold">AI 분석 시작 (데모)</button>
+          <button onClick={run} className="btn-primary mt-4 rounded-lg px-5 py-2.5 text-sm font-semibold">AI 분석 시작</button>
         </div>
       )}
 
@@ -56,15 +102,15 @@ export default function AiProfilePage() {
 
       {phase === "result" && (
         <div className="mt-6 space-y-4">
-          <Result title="한 문장 소개"><p>{SAMPLE.introShort}</p></Result>
+          <Result title="한 문장 소개"><p>{result.introShort}</p></Result>
           <Result title="핵심 강점">
             <div className="flex flex-wrap gap-2">
-              {SAMPLE.strengths.map((s) => <span key={s} className="rounded-lg bg-[var(--surface-2)] px-3 py-1.5 text-sm">{s}</span>)}
+              {result.strengths.map((s) => <span key={s} className="rounded-lg bg-[var(--surface-2)] px-3 py-1.5 text-sm">{s}</span>)}
             </div>
           </Result>
-          <Result title="경력 요약"><p className="text-sm leading-relaxed">{SAMPLE.careerSummary}</p></Result>
+          <Result title="경력 요약"><p className="text-sm leading-relaxed">{result.careerSummary}</p></Result>
           <Result title="대표 경력 추천">
-            <ul className="list-inside list-disc text-sm">{SAMPLE.featured.map((c) => <li key={c}>{c}</li>)}</ul>
+            <ul className="list-inside list-disc text-sm">{result.featured.map((c) => <li key={c}>{c}</li>)}</ul>
           </Result>
           <div className="flex gap-2">
             <Link href="/dashboard/profile" className="btn-primary rounded-lg px-4 py-2 text-sm font-semibold">이 내용으로 프로필 반영</Link>
