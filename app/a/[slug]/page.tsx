@@ -1,18 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MapPin, Users, Clock, Star, MessageSquare } from "lucide-react";
-import { DEMO_ARTISTS, getDemoArtist } from "@/lib/demo-data";
+import { getArtist } from "@/lib/data/artists-server";
 import Cover from "@/components/Cover";
 import ShareButton from "@/components/ShareButton";
 import { DemoDataBadge } from "@/components/StatusBadge";
 
-export function generateStaticParams() {
-  return DEMO_ARTISTS.map((a) => ({ slug: a.slug }));
-}
+export const dynamic = "force-dynamic"; // DB 프로필을 실시간 반영
 
 export default async function ArtistProfilePage({ params }: PageProps<"/a/[slug]">) {
   const { slug } = await params;
-  const artist = getDemoArtist(slug);
+  const artist = await getArtist(slug);
   if (!artist) notFound();
 
   const featured = artist.careers.filter((c) => c.isFeatured);

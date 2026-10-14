@@ -27,12 +27,17 @@ create table if not exists public.artist_profiles (
   main_region text,
   available_regions text[],
   team_size int default 1,
+  duration_min int default 60,                    -- 공연 가능 시간(분)
+  cover_image text default 'default',             -- 대표 이미지 프리셋/URL
   profile_status text default 'draft',           -- draft | review | public
   public_slug text unique,
   is_public boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+-- 기존 배포 호환용(이미 테이블이 있는 경우)
+alter table public.artist_profiles add column if not exists duration_min int default 60;
+alter table public.artist_profiles add column if not exists cover_image text default 'default';
 
 create table if not exists public.career_items (
   id uuid primary key default gen_random_uuid(),

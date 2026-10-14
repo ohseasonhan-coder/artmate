@@ -1,16 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
-import { DEMO_ARTISTS, getDemoArtist } from "@/lib/demo-data";
+import { getArtist } from "@/lib/data/artists-server";
 import InquiryForm from "@/components/InquiryForm";
 
-export function generateStaticParams() {
-  return DEMO_ARTISTS.map((a) => ({ slug: a.slug }));
-}
+export const dynamic = "force-dynamic";
 
 export default async function InquiryPage({ params }: PageProps<"/a/[slug]/inquiry">) {
   const { slug } = await params;
-  const artist = getDemoArtist(slug);
+  const artist = await getArtist(slug);
   if (!artist) notFound();
 
   return (

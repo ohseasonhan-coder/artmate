@@ -84,9 +84,11 @@ ADMIN_SECRET=
 
 1. supabase.com 에서 무료 프로젝트 생성
 2. **SQL Editor** 에 [`supabase.sql`](./supabase.sql) 전체를 붙여넣어 실행
-   - 테이블 11종 + Row Level Security 정책 포함
+   - 테이블(프로필·경력·미디어·문의·일정·프로젝트·사이트설정 등) + Row Level Security + Storage `assets` 버킷
    - 공개 프로필은 누구나 읽기, 소유자만 수정
    - 기업 문의·기능 관심도는 **익명 INSERT 허용**, 조회는 소유자/본인 한정
+   - 이어서 [`supabase.seed.sql`](./supabase.seed.sql) 실행 → 공개 예술인 3팀 샘플 데이터 삽입
+     (실행하지 않으면 `둘러보기`가 빈 목록으로 나옵니다. 환경변수 미연결 시에는 자동으로 데모 데이터 표시)
 3. **Project Settings > API** 의 URL / anon key 를 환경변수에 입력
 
 ---
