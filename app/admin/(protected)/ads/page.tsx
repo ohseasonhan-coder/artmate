@@ -3,19 +3,21 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ExternalLink, Trash2, Megaphone } from "lucide-react";
-import { DEFAULT_CONFIG, loadConfig, saveConfig, PLACEMENT_LABELS, type SiteConfig } from "@/lib/site-config";
+import { DEFAULT_CONFIG, loadConfig, saveConfig, type SiteConfig, type AdBlock } from "@/lib/site-config";
 import StatusBadge from "@/components/StatusBadge";
 
 export default function AdsPage() {
   const [config, setConfig] = useState<SiteConfig>(DEFAULT_CONFIG);
   useEffect(() => setConfig(loadConfig()), []);
 
+  const ads = config.blocks.filter((b): b is AdBlock => b.type === "ad");
+
   function toggle(id: string, enabled: boolean) {
-    const next = { ...config, ads: config.ads.map((a) => (a.id === id ? { ...a, enabled } : a)) };
+    const next = { ...config, blocks: config.blocks.map((b) => (b.id === id ? { ...b, enabled } : b)) };
     setConfig(next); saveConfig(next);
   }
   function remove(id: string) {
-    const next = { ...config, ads: config.ads.filter((a) => a.id !== id) };
+    const next = { ...config, blocks: config.blocks.filter((b) => b.id !== id) };
     setConfig(next); saveConfig(next);
   }
 
@@ -35,16 +37,13 @@ export default function AdsPage() {
       </div>
 
       <div className="mt-6 space-y-3">
-        {config.ads.length === 0 && (
-          <p className="card p-6 text-center text-sm text-[var(--muted)]">등록된 배너가 없습니다. 빌더에서 추가하세요.</p>
+        {ads.length === 0 && (
+          <p className="card p-6 text-center text-sm text-[var(--muted)]">등록된 광고 배너가 없습니다. 빌더에서 추가하세요.</p>
         )}
-        {config.ads.map((ad) => (
+        {ads.map((ad) => (
           <div key={ad.id} className="card flex flex-wrap items-center justify-between gap-3 p-4">
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <p className="truncate font-semibold">{ad.title}</p>
-                <span className="rounded-md bg-[var(--surface-2)] px-2 py-0.5 text-xs">{PLACEMENT_LABELS[ad.placement]}</span>
-              </div>
+              <p className="truncate font-semibold">{ad.title}</p>
               <p className="truncate text-sm text-[var(--muted)]">{ad.text}</p>
               <p className="mt-0.5 inline-flex items-center gap-1 text-xs text-[var(--accent)]">
                 <ExternalLink size={12} /> {ad.href}

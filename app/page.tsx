@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Sparkles, CalendarCheck, Trophy, Bot, ArrowRight } from "lucide-react";
 import StatusBadge from "@/components/StatusBadge";
-import AdSlot from "@/components/AdSlot";
-import { DEFAULT_CONFIG, loadConfig, type SiteConfig, type SectionId, type AdPlacement } from "@/lib/site-config";
+import CustomBlock from "@/components/CustomBlock";
+import { DEFAULT_CONFIG, loadConfig, type SiteConfig, type HeroContent } from "@/lib/site-config";
 
 const FLOW = ["자료 등록", "AI 프로필 생성", "공개 링크 공유", "기업 문의", "일정·활동 프로젝트", "활동 완료", "경력 업데이트"];
 
@@ -20,51 +20,60 @@ export default function Home() {
   const [config, setConfig] = useState<SiteConfig>(DEFAULT_CONFIG);
   useEffect(() => setConfig(loadConfig()), []);
 
-  const adsAt = (p: AdPlacement) => config.ads.filter((a) => a.enabled && a.placement === p);
-  const SECTIONS: Record<SectionId, React.ReactNode> = { hero: <Hero />, features: <Features />, flow: <Flow />, cta: <Cta /> };
-  const placementForSection: Partial<Record<SectionId, AdPlacement>> = { hero: "after-hero", features: "after-features" };
+  // 테마 액센트를 홈 화면 하위에만 적용 (soft = 13% 투명도)
+  const themeStyle = {
+    ["--accent" as string]: config.theme.accent,
+    ["--accent-soft" as string]: config.theme.accent + "22",
+  } as React.CSSProperties;
 
   return (
-    <div>
-      {adsAt("top").map((ad) => <AdSlot key={ad.id} ad={ad} />)}
-      {config.sections.filter((s) => s.enabled).map((s) => (
-        <div key={s.id}>
-          {SECTIONS[s.id]}
-          {placementForSection[s.id] && adsAt(placementForSection[s.id]!).map((ad) => <AdSlot key={ad.id} ad={ad} />)}
-        </div>
-      ))}
-      {adsAt("bottom").map((ad) => <AdSlot key={ad.id} ad={ad} />)}
+    <div style={themeStyle}>
+      {config.blocks.filter((b) => b.enabled).map((b) => {
+        switch (b.type) {
+          case "hero": return <Hero key={b.id} hero={config.hero} />;
+          case "features": return <Features key={b.id} />;
+          case "flow": return <Flow key={b.id} />;
+          case "cta": return <Cta key={b.id} />;
+          default: return <CustomBlock key={b.id} block={b} />;
+        }
+      })}
     </div>
   );
 }
 
-function Hero() {
+function Hero({ hero }: { hero: HeroContent }) {
   return (
     <section className="relative overflow-hidden">
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-[var(--accent-soft)] to-transparent" />
       <div className="mx-auto max-w-6xl px-4 py-16 md:py-24">
         <div className="mx-auto max-w-3xl text-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--accent)]/20 bg-[var(--surface)] px-3 py-1 text-xs font-medium text-[var(--accent)]">
-            <Sparkles size={13} /> 문화예술인 전용 AI 개인 매니저
-          </span>
-          <h1 className="mt-5 text-3xl font-bold leading-tight tracking-tight md:text-5xl">
-            프로필을 만들고, 섭외를 받고,<br />일정을 관리하세요.<br />
-            <span className="text-[var(--accent)]">나머지는 AI 매니저가 챙겨드립니다.</span>
+          {hero.badge && (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--accent)]/20 bg-[var(--surface)] px-3 py-1 text-xs font-medium text-[var(--accent)]">
+              <Sparkles size={13} /> {hero.badge}
+            </span>
+          )}
+          <h1 className="mt-5 whitespace-pre-line text-3xl font-bold leading-tight tracking-tight md:text-5xl">
+            {hero.title}
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-base text-[var(--muted)] md:text-lg">
-            사진, 영상, 기존 이력서를 한 번만 등록하면 전문 프로필을 만들고
-            기업의 섭외 문의부터 일정과 경력까지 한곳에서 관리할 수 있습니다.
+          <p className="mx-auto mt-5 max-w-2xl whitespace-pre-line text-base text-[var(--muted)] md:text-lg">
+            {hero.subtitle}
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link href="/onboarding" className="btn-primary inline-flex items-center gap-1.5 rounded-xl px-5 py-3 text-sm font-semibold">
-              무료 프로필 만들기 <ArrowRight size={16} />
-            </Link>
-            <Link href="/a/crossover-ensemble" className="inline-flex items-center gap-1.5 rounded-xl border bg-[var(--surface)] px-5 py-3 text-sm font-semibold transition hover:bg-[var(--surface-2)]">
-              샘플 프로필 보기
-            </Link>
-            <Link href="/browse" className="inline-flex items-center gap-1.5 rounded-xl border bg-[var(--surface)] px-5 py-3 text-sm font-semibold transition hover:bg-[var(--surface-2)]">
-              기업으로 둘러보기
-            </Link>
+            {hero.primaryLabel && (
+              <Link href={hero.primaryHref || "#"} className="btn-primary inline-flex items-center gap-1.5 rounded-xl px-5 py-3 text-sm font-semibold">
+                {hero.primaryLabel} <ArrowRight size={16} />
+              </Link>
+            )}
+            {hero.secondaryLabel && (
+              <Link href={hero.secondaryHref || "#"} className="inline-flex items-center gap-1.5 rounded-xl border bg-[var(--surface)] px-5 py-3 text-sm font-semibold transition hover:bg-[var(--surface-2)]">
+                {hero.secondaryLabel}
+              </Link>
+            )}
+            {hero.tertiaryLabel && (
+              <Link href={hero.tertiaryHref || "#"} className="inline-flex items-center gap-1.5 rounded-xl border bg-[var(--surface)] px-5 py-3 text-sm font-semibold transition hover:bg-[var(--surface-2)]">
+                {hero.tertiaryLabel}
+              </Link>
+            )}
           </div>
         </div>
       </div>
