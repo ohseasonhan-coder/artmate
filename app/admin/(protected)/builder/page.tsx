@@ -4,39 +4,86 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowUp, ArrowDown, Eye, EyeOff, Plus, Trash2, ExternalLink, Save, RotateCcw,
-  GripVertical, Megaphone, Type, Bell, Monitor, Smartphone, RefreshCw, Palette,
+  GripVertical, Megaphone, Type, Bell, Image as ImageIcon, Film, Minus,
+  Monitor, Smartphone, RefreshCw, Palette, Cloud, HardDrive,
 } from "lucide-react";
 import {
-  DEFAULT_CONFIG, loadConfig, saveConfig, newBlock, BLOCK_LABELS, CUSTOM_TYPES,
+  DEFAULT_CONFIG, loadConfig, saveConfig, newBlock, parseYoutubeId, BLOCK_LABELS, CUSTOM_TYPES,
   COLOR_PRESETS, ACCENT_PRESETS,
-  type SiteConfig, type Block, type BlockType, type NoticeBlock, type TextBlock, type AdBlock,
+  type SiteConfig, type Block, type BlockType,
+  type NoticeBlock, type TextBlock, type AdBlock, type ImageBlock, type VideoBlock,
 } from "@/lib/site-config";
 import StatusBadge from "@/components/StatusBadge";
+import ImageUpload from "@/components/ImageUpload";
 
 const ADD_MENU: { type: BlockType; icon: React.ElementType; label: string }[] = [
-  { type: "notice", icon: Bell, label: "공지 바" },
-  { type: "text", icon: Type, label: "텍스트 블록" },
-  { type: "ad", icon: Megaphone, label: "광고 배너" },
+  { type: "notice", icon: Bell, label: "공지" },
+  { type: "text", icon: Type, label: "텍스트" },
+  { type: "ad", icon: Megaphone, label: "광고" },
+  { type: "image", icon: ImageIcon, label: "이미지" },
+  { type: "video", icon: Film, label: "영상" },
+  { type: "divider", icon: Minus, label: "구분선" },
 ];
 
 export default function BuilderPage() {
   const [config, setConfig] = useState<SiteConfig>(DEFAULT_CONFIG);
-  const [saved, setSaved] = useState(false);
+  const [source, setSource] = useState<"supabase" | "local">("local");
+  const [saved, setSaved] = useState<string | null>(null);
   const [previewKey, setPreviewKey] = useState(0);
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const loaded = useRef(false);
 
-  useEffect(() => { setConfig(loadConfig()); loaded.current = true; }, []);
+  // 로드: Supabase에 저장된 설정이 있으면 그것을, 없으면 localStorage
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/site-config");
+        const data = await res.json();
+        if (data.source === "supabase") {
+          setConfig(data.config);
+          setSource("supabase");
+        } else {
+          setConfig(loadConfig());
+          setSource("local");
+        }
+      } catch {
+        setConfig(loadConfig());
+      } finally {
+        loaded.current = true;
+      }
+    })();
+  }, []);
 
-  // 변경은 항상 localStorage에 저장(데이터 유실 방지). refresh=true면 미리보기 새로고침.
   function update(next: SiteConfig, refresh = false) {
     setConfig(next);
-    if (loaded.current) saveConfig(next);
-    setSaved(false);
-    if (refresh) setPreviewKey((k) => k + 1);
+    if (loaded.current) saveConfig(next); // 로컬 미리보기용 캐시
+    setSaved(null);
+    if (refresh && source === "local") setPreviewKey((k) => k + 1);
   }
-  function save() { saveConfig(config); setSaved(true); setPreviewKey((k) => k + 1); setTimeout(() => setSaved(false), 2000); }
+
+  async function save() {
+    saveConfig(config);
+    // Supabase 연결 시 서버에 저장(모든 방문자 공유)
+    try {
+      const res = await fetch("/api/site-config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ config }),
+      });
+      if (res.ok) {
+        setSource("supabase");
+        setSaved("모든 방문자에게 반영되었습니다.");
+      } else {
+        setSaved("이 브라우저에 저장되었습니다. (Supabase 미연결)");
+      }
+    } catch {
+      setSaved("이 브라우저에 저장되었습니다.");
+    }
+    setPreviewKey((k) => k + 1);
+    setTimeout(() => setSaved(null), 2500);
+  }
+
   function reset() { update(structuredClone(DEFAULT_CONFIG), true); }
   function refreshPreview() { saveConfig(config); setPreviewKey((k) => k + 1); }
 
@@ -66,7 +113,7 @@ export default function BuilderPage() {
     update({ ...config, blocks: [...config.blocks, newBlock(type)] }, true);
   }
   function patch(id: string, p: Partial<Block>) {
-    update({ ...config, blocks: config.blocks.map((b) => (b.id === id ? { ...b, ...p } : b)) });
+    update({ ...config, blocks: config.blocks.map((b) => (b.id === id ? ({ ...b, ...p } as Block) : b)) });
   }
 
   return (
@@ -76,18 +123,22 @@ export default function BuilderPage() {
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold">페이지 빌더</h1>
             <StatusBadge status="demo" />
+            <span className="inline-flex items-center gap-1 rounded-md bg-[var(--surface-2)] px-2 py-0.5 text-xs text-[var(--muted)]">
+              {source === "supabase" ? <><Cloud size={12} /> 전체 공유</> : <><HardDrive size={12} /> 이 브라우저</>}
+            </span>
           </div>
-          <p className="mt-1 text-[var(--muted)]">홈 화면을 블록으로 구성합니다. 드래그로 순서를 바꾸고, 광고·공지·텍스트를 추가하세요.</p>
+          <p className="mt-1 text-[var(--muted)]">홈 화면을 블록으로 구성합니다. 드래그로 순서를 바꾸고 다양한 블록을 추가하세요.</p>
         </div>
         <div className="flex gap-2">
           <Link href="/" target="_blank" className="inline-flex items-center gap-1.5 rounded-lg border bg-[var(--surface)] px-3 py-2 text-sm font-medium hover:bg-[var(--surface-2)]">
-            <ExternalLink size={15} /> 새 탭에서 보기
+            <ExternalLink size={15} /> 새 탭
           </Link>
           <button onClick={save} className="btn-primary inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold">
-            <Save size={15} /> {saved ? "저장됨!" : "저장"}
+            <Save size={15} /> 저장
           </button>
         </div>
       </div>
+      {saved && <p className="mt-3 rounded-lg bg-[var(--live-soft)] p-2.5 text-sm text-[var(--live)]">{saved}</p>}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_minmax(360px,42%)]">
         {/* ── 편집 패널 ── */}
@@ -98,8 +149,8 @@ export default function BuilderPage() {
             <div className="card flex flex-wrap items-center gap-3 p-4">
               {ACCENT_PRESETS.map((a) => (
                 <button key={a.value} title={a.name} onClick={() => update({ ...config, theme: { accent: a.value } }, true)}
-                  className={`h-8 w-8 rounded-full transition ${config.theme.accent === a.value ? "ring-2 ring-offset-2 ring-offset-[var(--surface)]" : ""}`}
-                  style={{ background: a.value, boxShadow: config.theme.accent === a.value ? `0 0 0 2px ${a.value}` : undefined }} />
+                  className="h-8 w-8 rounded-full transition"
+                  style={{ background: a.value, boxShadow: config.theme.accent === a.value ? `0 0 0 2px var(--surface), 0 0 0 4px ${a.value}` : undefined }} />
               ))}
               <label className="ml-2 inline-flex items-center gap-2 text-sm text-[var(--muted)]">
                 직접 선택
@@ -109,7 +160,7 @@ export default function BuilderPage() {
             </div>
           </section>
 
-          {/* 히어로 편집 */}
+          {/* 히어로 */}
           <section>
             <h2 className="mb-3 font-bold">히어로 문구</h2>
             <div className="card space-y-3 p-4">
@@ -127,15 +178,15 @@ export default function BuilderPage() {
 
           {/* 블록 목록 */}
           <section>
-            <div className="mb-3 flex items-center justify-between">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <h2 className="font-bold">블록 구성</h2>
-              <div className="flex gap-1">
+              <div className="flex flex-wrap gap-1">
                 {ADD_MENU.map((m) => {
                   const Icon = m.icon;
                   return (
                     <button key={m.type} onClick={() => add(m.type)}
                       className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-medium hover:bg-[var(--surface-2)]">
-                      <Plus size={13} /> <Icon size={13} /> {m.label}
+                      <Plus size={12} /> <Icon size={13} /> {m.label}
                     </button>
                   );
                 })}
@@ -146,8 +197,7 @@ export default function BuilderPage() {
               {config.blocks.map((b, i) => {
                 const custom = CUSTOM_TYPES.includes(b.type);
                 return (
-                  <div key={b.id}
-                    draggable
+                  <div key={b.id} draggable
                     onDragStart={() => setDragIndex(i)}
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={() => drop(i)}
@@ -165,15 +215,15 @@ export default function BuilderPage() {
                       <button onClick={() => toggle(b.id)} className={`rounded-lg border px-2 py-1 text-xs ${b.enabled ? "text-[var(--live)]" : "text-[var(--muted)]"}`}>
                         {b.enabled ? <Eye size={14} /> : <EyeOff size={14} />}
                       </button>
-                      {custom && (
-                        <button onClick={() => remove(b.id)} className="text-[var(--muted)] hover:text-rose-500"><Trash2 size={15} /></button>
-                      )}
+                      {custom && <button onClick={() => remove(b.id)} className="text-[var(--muted)] hover:text-rose-500"><Trash2 size={15} /></button>}
                     </div>
 
-                    {/* 커스텀 블록 인라인 편집 */}
                     {b.type === "notice" && <NoticeEditor block={b as NoticeBlock} onPatch={(p) => patch(b.id, p)} />}
                     {b.type === "text" && <TextEditor block={b as TextBlock} onPatch={(p) => patch(b.id, p)} />}
                     {b.type === "ad" && <AdEditor block={b as AdBlock} onPatch={(p) => patch(b.id, p)} />}
+                    {b.type === "image" && <ImageEditor block={b as ImageBlock} onPatch={(p) => patch(b.id, p)} />}
+                    {b.type === "video" && <VideoEditor block={b as VideoBlock} onPatch={(p) => patch(b.id, p)} />}
+                    {b.type === "divider" && <p className="mt-2 border-t pt-2 text-xs text-[var(--muted)]">가로 구분선</p>}
                   </div>
                 );
               })}
@@ -185,7 +235,7 @@ export default function BuilderPage() {
               <RotateCcw size={15} /> 기본값으로 초기화
             </button>
             <button onClick={save} className="btn-primary inline-flex items-center gap-1.5 rounded-lg px-5 py-2.5 text-sm font-semibold">
-              <Save size={15} /> {saved ? "저장됨!" : "변경사항 저장"}
+              <Save size={15} /> 변경사항 저장
             </button>
           </div>
         </div>
@@ -210,7 +260,9 @@ export default function BuilderPage() {
       </div>
 
       <p className="mt-6 rounded-lg bg-[var(--surface-2)] p-3 text-xs text-[var(--muted)]">
-        프로토타입에서는 구성이 이 브라우저(localStorage)에 저장됩니다. 실서비스에서는 Supabase에 저장되어 모든 방문자에게 반영됩니다.
+        {source === "supabase"
+          ? "Supabase에 저장되어 모든 방문자에게 동일하게 보입니다."
+          : "현재 이 브라우저(localStorage)에만 저장됩니다. Supabase 환경변수를 설정하면 모든 방문자에게 반영됩니다."}
       </p>
 
       <style>{`.i{width:100%;border:1px solid var(--border);background:var(--surface);border-radius:.5rem;padding:.5rem .7rem;font-size:.85rem;outline:none}.i:focus{border-color:var(--accent)}`}</style>
@@ -274,6 +326,28 @@ function AdEditor({ block, onPatch }: { block: AdBlock; onPatch: (p: Partial<AdB
       <input className="i sm:col-span-2" value={block.text} onChange={(e) => onPatch({ text: e.target.value })} placeholder="문구" />
       <input className="i" value={block.ctaLabel} onChange={(e) => onPatch({ ctaLabel: e.target.value })} placeholder="버튼 라벨" />
       <div className="flex items-center"><ColorSwatches value={block.color} onChange={(c) => onPatch({ color: c })} /></div>
+    </div>
+  );
+}
+
+function ImageEditor({ block, onPatch }: { block: ImageBlock; onPatch: (p: Partial<ImageBlock>) => void }) {
+  return (
+    <div className="mt-3 space-y-2 border-t pt-3">
+      <ImageUpload value={block.url} onChange={(url) => onPatch({ url })} />
+      <input className="i" value={block.alt} onChange={(e) => onPatch({ alt: e.target.value })} placeholder="이미지 설명(alt)" />
+      <input className="i" value={block.href} onChange={(e) => onPatch({ href: e.target.value })} placeholder="클릭 시 이동할 링크 (선택)" />
+    </div>
+  );
+}
+
+function VideoEditor({ block, onPatch }: { block: VideoBlock; onPatch: (p: Partial<VideoBlock>) => void }) {
+  return (
+    <div className="mt-3 space-y-2 border-t pt-3">
+      <input className="i" value={block.title} onChange={(e) => onPatch({ title: e.target.value })} placeholder="영상 제목" />
+      <input className="i" value={block.youtubeId}
+        onChange={(e) => onPatch({ youtubeId: parseYoutubeId(e.target.value) || e.target.value })}
+        placeholder="YouTube URL 또는 영상 ID 붙여넣기" />
+      {block.youtubeId && <p className="text-xs text-[var(--muted)]">영상 ID: {block.youtubeId}</p>}
     </div>
   );
 }

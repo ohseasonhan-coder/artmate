@@ -71,8 +71,11 @@ npm run build    # 프로덕션 빌드 (타입 검사 포함)
 ```
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
-AI_API_KEY=            # 서버 측 전용 (NEXT_PUBLIC_ 접두사 금지)
+SUPABASE_SERVICE_ROLE_KEY=   # 서버 전용. 사이트 설정 저장·이미지 업로드에 사용
+AI_API_KEY=                  # 서버 측 전용 (NEXT_PUBLIC_ 접두사 금지)
 ADMIN_EMAIL=
+ADMIN_USERS=                 # "id:pw,id2:pw2" (기본: master/season, master1/J)
+ADMIN_SECRET=
 ```
 
 ---
@@ -117,7 +120,9 @@ ADMIN_EMAIL=
   - ⚠️ 비밀번호는 **서버에서만 검증**되어 클라이언트 번들에 노출되지 않습니다.
   - 환경변수 `ADMIN_USERS`("id:pw,id2:pw2"), `ADMIN_SECRET`로 덮어쓸 수 있으며 실서비스에서는 반드시 강한 값으로 교체하세요.
 - 기능:
-  - **페이지 빌더** (`/admin/builder`) — Wix형: 홈 섹션 순서·표시 조절 + 광고 배너 삽입/편집. 변경은 브라우저(localStorage)에 저장되어 홈에 즉시 반영.
+  - **페이지 빌더** (`/admin/builder`) — Wix형: 블록(히어로·기능·흐름·CTA + 공지·텍스트·광고·이미지·영상·구분선)을 드래그로 정렬, 히어로 문구·테마 색상 편집, 이미지 업로드, 데스크톱/모바일 실시간 미리보기.
+    - **Supabase 연결 시**: 구성이 `site_config` 테이블에 저장되어 **모든 방문자에게 공유**되고, 이미지는 Storage `assets` 버킷에 업로드됩니다. (`SUPABASE_SERVICE_ROLE_KEY` 필요)
+    - **미연결(데모) 시**: 구성은 편집한 브라우저(localStorage)에만, 이미지는 data URL로 저장됩니다.
   - 광고 관리 · 사용자 목록 · 프로필 검토·승인 · 기업 문의 관리 · 콘텐츠 신고 · 사용자 피드백 · 기능 관심도 · 샘플 데이터
 
 ## 테스트 체크리스트

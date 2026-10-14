@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import type { Block, NoticeBlock, TextBlock, AdBlock } from "@/lib/site-config";
+import type { Block, NoticeBlock, TextBlock, AdBlock, ImageBlock, VideoBlock } from "@/lib/site-config";
 import Cover from "./Cover";
 
 const NOTICE_BG: Record<string, string> = {
@@ -59,6 +59,42 @@ export default function CustomBlock({ block }: { block: Block }) {
           </div>
         </div>
       </section>
+    );
+  }
+
+  if (block.type === "image") {
+    const b = block as ImageBlock;
+    if (!b.url) return null;
+    const img = (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={b.url} alt={b.alt} className="mx-auto max-h-[480px] w-full max-w-5xl rounded-xl object-cover" />
+    );
+    return (
+      <section className="mx-auto max-w-6xl px-4 py-6">
+        {b.href ? <Link href={b.href}>{img}</Link> : img}
+      </section>
+    );
+  }
+
+  if (block.type === "video") {
+    const b = block as VideoBlock;
+    if (!b.youtubeId) return null;
+    return (
+      <section className="mx-auto max-w-4xl px-4 py-8">
+        {b.title && <h2 className="mb-3 text-center text-xl font-bold">{b.title}</h2>}
+        <div className="aspect-video overflow-hidden rounded-xl border">
+          <iframe className="h-full w-full" src={`https://www.youtube.com/embed/${b.youtubeId}`} title={b.title}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+        </div>
+      </section>
+    );
+  }
+
+  if (block.type === "divider") {
+    return (
+      <div className="mx-auto max-w-6xl px-4 py-6">
+        <hr className="border-[var(--border)]" />
+      </div>
     );
   }
 

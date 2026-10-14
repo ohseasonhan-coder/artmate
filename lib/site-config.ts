@@ -2,11 +2,11 @@
 // 프로토타입에서는 localStorage에 저장한다.
 // (실서비스에서는 Supabase site_config 테이블 + 관리자 RLS로 대체)
 
-export type BlockType = "hero" | "features" | "flow" | "cta" | "notice" | "text" | "ad";
+export type BlockType = "hero" | "features" | "flow" | "cta" | "notice" | "text" | "ad" | "image" | "video" | "divider";
 
 // 내장 블록(삭제 불가, 순서·표시만 조절) vs 커스텀 블록(추가·삭제 가능)
 export const BUILTIN_TYPES: BlockType[] = ["hero", "features", "flow", "cta"];
-export const CUSTOM_TYPES: BlockType[] = ["notice", "text", "ad"];
+export const CUSTOM_TYPES: BlockType[] = ["notice", "text", "ad", "image", "video", "divider"];
 
 export interface BaseBlock {
   id: string;
@@ -32,7 +32,21 @@ export interface AdBlock extends BaseBlock {
   href: string;
   color: string;
 }
-export type Block = BaseBlock | NoticeBlock | TextBlock | AdBlock;
+export interface ImageBlock extends BaseBlock {
+  type: "image";
+  url: string;   // Supabase Storage URL 또는 data URL
+  alt: string;
+  href: string;  // 선택: 클릭 시 이동
+}
+export interface VideoBlock extends BaseBlock {
+  type: "video";
+  youtubeId: string;
+  title: string;
+}
+export interface DividerBlock extends BaseBlock {
+  type: "divider";
+}
+export type Block = BaseBlock | NoticeBlock | TextBlock | AdBlock | ImageBlock | VideoBlock | DividerBlock;
 
 export interface HeroContent {
   badge: string;
@@ -64,6 +78,9 @@ export const BLOCK_LABELS: Record<BlockType, string> = {
   notice: "공지 바",
   text: "텍스트 블록",
   ad: "광고 배너",
+  image: "이미지",
+  video: "영상 (YouTube)",
+  divider: "구분선",
 };
 
 export const COLOR_PRESETS = ["indigo", "plum", "amber", "default"] as const;
@@ -116,6 +133,10 @@ export function newBlock(type: BlockType): Block {
       return { id, type, enabled: true, title: "새 텍스트 블록", body: "내용을 입력하세요.", align: "center" } as TextBlock;
     case "ad":
       return { id, type, enabled: true, title: "새 광고 배너", text: "홍보 문구를 입력하세요.", ctaLabel: "자세히", href: "/features", color: "indigo" } as AdBlock;
+    case "image":
+      return { id, type, enabled: true, url: "", alt: "이미지 설명", href: "" } as ImageBlock;
+    case "video":
+      return { id, type, enabled: true, youtubeId: "", title: "영상 제목" } as VideoBlock;
     default:
       return { id, type, enabled: true };
   }
@@ -159,4 +180,13 @@ export function loadConfig(): SiteConfig {
 export function saveConfig(config: SiteConfig) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(LS_KEY, JSON.stringify(config));
+}
+
+/** YouTube URL 또는 ID에서 11자리 영상 ID를 추출 */
+export function parseYoutubeId(input: string): string {
+  if (!input) return "";
+  const m = input.match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([A-Za-z0-9_-]{11})/);
+  if (m) return m[1];
+  if (/^[A-Za-z0-9_-]{11}$/.test(input.trim())) return input.trim();
+  return "";
 }

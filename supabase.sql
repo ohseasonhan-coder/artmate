@@ -229,3 +229,24 @@ create policy "interest insert" on public.feature_interests for insert with chec
 create policy "interest self read" on public.feature_interests for select using (auth.uid() = user_id);
 create policy "feedback insert" on public.user_feedback for insert with check (true);
 create policy "feedback self read" on public.user_feedback for select using (auth.uid() = user_id);
+
+-- ============================================================
+--  사이트 설정 (Wix형 페이지 빌더) — 단일 행(id='home')에 JSON 저장
+-- ============================================================
+create table if not exists public.site_config (
+  id text primary key,
+  data jsonb not null,
+  updated_at timestamptz not null default now()
+);
+alter table public.site_config enable row level security;
+-- 홈 구성은 누구나 읽기, 쓰기는 서비스 롤(관리자 API)로만 (일반 write 정책 없음 → anon 차단)
+create policy "site_config public read" on public.site_config for select using (true);
+
+-- ============================================================
+--  Storage: 빌더 이미지 업로드용 공개 버킷 'assets'
+-- ============================================================
+insert into storage.buckets (id, name, public)
+values ('assets', 'assets', true)
+on conflict (id) do nothing;
+-- 공개 읽기 (업로드는 서비스 롤 API가 RLS를 우회해 처리)
+create policy "assets public read" on storage.objects for select using (bucket_id = 'assets');
