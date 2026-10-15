@@ -23,6 +23,10 @@ function getUsers(): Record<string, string> {
 const SECRET = process.env.ADMIN_SECRET || "artmate-prototype-admin-secret";
 export const ADMIN_COOKIE = "artmate_admin";
 
+// 시스템 점검용: 기본(약한) 값 사용 여부만 노출, 실제 값은 절대 노출하지 않음
+export const isAdminUsersCustom = !!process.env.ADMIN_USERS;
+export const isAdminSecretCustom = !!process.env.ADMIN_SECRET;
+
 export function verifyCredentials(username: string, password: string): boolean {
   const users = getUsers();
   const stored = users[username];

@@ -4,11 +4,12 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, LayoutTemplate, Megaphone, Users, FileCheck,
-  MessageSquare, Flag, MessagesSquare, BarChart3, Database, LogOut,
+  MessageSquare, Flag, MessagesSquare, BarChart3, Database, LogOut, Activity,
 } from "lucide-react";
 
 const LINKS = [
   { href: "/admin", label: "대시보드", icon: LayoutDashboard },
+  { href: "/admin/status", label: "시스템 점검", icon: Activity },
   { href: "/admin/builder", label: "페이지 빌더", icon: LayoutTemplate },
   { href: "/admin/ads", label: "광고 관리", icon: Megaphone },
   { href: "/admin/users", label: "사용자 목록", icon: Users },
